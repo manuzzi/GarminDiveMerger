@@ -60,6 +60,159 @@ TIMESTAMP_FIELD_NAMES = {"timestamp", "time_created", "local_timestamp", "start_
 _DT_MIN_UTC = datetime(1970, 1, 1, tzinfo=timezone.utc)
 _FIT_EPOCH_S = 631_065_600  # Unix seconds per il FIT epoch (1989-12-31 UTC)
 
+# ── Traduzioni UI ─────────────────────────────────────────────────────────────
+TRANSLATIONS: dict[str, dict[str, str]] = {
+    "it": {
+        "btn_add":            "➕  Aggiungi file…",
+        "btn_remove":         "✖  Rimuovi",
+        "btn_sort":           "⟳  Riordina per ora",
+        "btn_merge":          "⚡  Unisci",
+        "btn_browse":         "Sfoglia…",
+        "lf_files":           "File selezionati",
+        "lf_output":          "File di output",
+        "col_file":           "Nome file",
+        "col_dive_n":         "Dive #",
+        "col_datetime":       "Data/Ora (locale)",
+        "col_max_depth":      "Prof. max",
+        "col_bottom_time":    "Fondo",
+        "col_duration":       "Durata",
+        "status_initial":     "Aggiungi almeno 2 file .fit per iniziare.",
+        "status_ready":       "{n} file pronti — premi Unisci per procedere.",
+        "status_reading":     "Lettura {name}…",
+        "status_merging":     "Merge di {n} immersioni in corso…",
+        "status_done":        "✓ Merge completato → {name}",
+        "status_error":       "✗ Errore: {exc}",
+        "dlg_read_err_title": "Errore lettura file",
+        "dlg_no_out_title":   "Percorso mancante",
+        "dlg_no_out_msg":     "Specifica il percorso del file di output.",
+        "dlg_done_title":     "Merge completato",
+        "dlg_done_msg":       "File salvato con successo:\n{path}\n\n{n} immersioni unite.",
+        "dlg_err_title":      "Errore durante il merge",
+        "fd_open_title":      "Seleziona file .fit",
+        "fd_open_ft_all":     "Tutti i file",
+        "fd_save_title":      "Salva file merged",
+    },
+    "en": {
+        "btn_add":            "➕  Add files…",
+        "btn_remove":         "✖  Remove",
+        "btn_sort":           "⟳  Sort by time",
+        "btn_merge":          "⚡  Merge",
+        "btn_browse":         "Browse…",
+        "lf_files":           "Selected files",
+        "lf_output":          "Output file",
+        "col_file":           "File name",
+        "col_dive_n":         "Dive #",
+        "col_datetime":       "Date/Time (local)",
+        "col_max_depth":      "Max depth",
+        "col_bottom_time":    "Bottom",
+        "col_duration":       "Duration",
+        "status_initial":     "Add at least 2 .fit files to start.",
+        "status_ready":       "{n} files ready — click Merge to proceed.",
+        "status_reading":     "Reading {name}…",
+        "status_merging":     "Merging {n} dives…",
+        "status_done":        "✓ Merge complete → {name}",
+        "status_error":       "✗ Error: {exc}",
+        "dlg_read_err_title": "File read error",
+        "dlg_no_out_title":   "Missing path",
+        "dlg_no_out_msg":     "Please specify the output file path.",
+        "dlg_done_title":     "Merge complete",
+        "dlg_done_msg":       "File saved successfully:\n{path}\n\n{n} dives merged.",
+        "dlg_err_title":      "Merge error",
+        "fd_open_title":      "Select .fit files",
+        "fd_open_ft_all":     "All files",
+        "fd_save_title":      "Save merged file",
+    },
+    "de": {
+        "btn_add":            "➕  Dateien hinzufügen…",
+        "btn_remove":         "✖  Entfernen",
+        "btn_sort":           "⟳  Nach Zeit sortieren",
+        "btn_merge":          "⚡  Zusammenführen",
+        "btn_browse":         "Durchsuchen…",
+        "lf_files":           "Ausgewählte Dateien",
+        "lf_output":          "Ausgabedatei",
+        "col_file":           "Dateiname",
+        "col_dive_n":         "Tauchgang #",
+        "col_datetime":       "Datum/Uhrzeit (lokal)",
+        "col_max_depth":      "Max. Tiefe",
+        "col_bottom_time":    "Grundzeit",
+        "col_duration":       "Dauer",
+        "status_initial":     "Mindestens 2 .fit-Dateien hinzufügen.",
+        "status_ready":       "{n} Dateien bereit — Zusammenführen klicken.",
+        "status_reading":     "Lese {name}…",
+        "status_merging":     "{n} Tauchgänge werden zusammengeführt…",
+        "status_done":        "✓ Abgeschlossen → {name}",
+        "status_error":       "✗ Fehler: {exc}",
+        "dlg_read_err_title": "Fehler beim Lesen",
+        "dlg_no_out_title":   "Pfad fehlt",
+        "dlg_no_out_msg":     "Bitte Ausgabedateipfad angeben.",
+        "dlg_done_title":     "Zusammenführen abgeschlossen",
+        "dlg_done_msg":       "Datei erfolgreich gespeichert:\n{path}\n\n{n} Tauchgänge zusammengeführt.",
+        "dlg_err_title":      "Fehler beim Zusammenführen",
+        "fd_open_title":      ".fit-Dateien auswählen",
+        "fd_open_ft_all":     "Alle Dateien",
+        "fd_save_title":      "Zusammengeführte Datei speichern",
+    },
+    "fr": {
+        "btn_add":            "➕  Ajouter des fichiers…",
+        "btn_remove":         "✖  Supprimer",
+        "btn_sort":           "⟳  Trier par heure",
+        "btn_merge":          "⚡  Fusionner",
+        "btn_browse":         "Parcourir…",
+        "lf_files":           "Fichiers sélectionnés",
+        "lf_output":          "Fichier de sortie",
+        "col_file":           "Nom du fichier",
+        "col_dive_n":         "Plongée #",
+        "col_datetime":       "Date/Heure (locale)",
+        "col_max_depth":      "Prof. max",
+        "col_bottom_time":    "Fond",
+        "col_duration":       "Durée",
+        "status_initial":     "Ajoutez au moins 2 fichiers .fit pour commencer.",
+        "status_ready":       "{n} fichiers prêts — cliquez sur Fusionner.",
+        "status_reading":     "Lecture de {name}…",
+        "status_merging":     "Fusion de {n} plongées en cours…",
+        "status_done":        "✓ Fusion terminée → {name}",
+        "status_error":       "✗ Erreur : {exc}",
+        "dlg_read_err_title": "Erreur de lecture",
+        "dlg_no_out_title":   "Chemin manquant",
+        "dlg_no_out_msg":     "Veuillez indiquer le chemin du fichier de sortie.",
+        "dlg_done_title":     "Fusion terminée",
+        "dlg_done_msg":       "Fichier enregistré avec succès :\n{path}\n\n{n} plongées fusionnées.",
+        "dlg_err_title":      "Erreur lors de la fusion",
+        "fd_open_title":      "Sélectionner des fichiers .fit",
+        "fd_open_ft_all":     "Tous les fichiers",
+        "fd_save_title":      "Enregistrer le fichier fusionné",
+    },
+    "es": {
+        "btn_add":            "➕  Añadir archivos…",
+        "btn_remove":         "✖  Eliminar",
+        "btn_sort":           "⟳  Ordenar por hora",
+        "btn_merge":          "⚡  Unir",
+        "btn_browse":         "Explorar…",
+        "lf_files":           "Archivos seleccionados",
+        "lf_output":          "Archivo de salida",
+        "col_file":           "Nombre de archivo",
+        "col_dive_n":         "Buceo #",
+        "col_datetime":       "Fecha/Hora (local)",
+        "col_max_depth":      "Prof. máx.",
+        "col_bottom_time":    "Fondo",
+        "col_duration":       "Duración",
+        "status_initial":     "Añade al menos 2 archivos .fit para empezar.",
+        "status_ready":       "{n} archivos listos — pulsa Unir para continuar.",
+        "status_reading":     "Leyendo {name}…",
+        "status_merging":     "Uniendo {n} inmersiones…",
+        "status_done":        "✓ Unión completada → {name}",
+        "status_error":       "✗ Error: {exc}",
+        "dlg_read_err_title": "Error de lectura",
+        "dlg_no_out_title":   "Ruta no especificada",
+        "dlg_no_out_msg":     "Por favor, especifica la ruta del archivo de salida.",
+        "dlg_done_title":     "Unión completada",
+        "dlg_done_msg":       "Archivo guardado con éxito:\n{path}\n\n{n} inmersiones unidas.",
+        "dlg_err_title":      "Error al unir",
+        "fd_open_title":      "Seleccionar archivos .fit",
+        "fd_open_ft_all":     "Todos los archivos",
+        "fd_save_title":      "Guardar archivo unido",
+    },
+}
 
 # ── Utilità di conversione ────────────────────────────────────────────────────
 def _to_fit_ms(value) -> int | None:
@@ -138,6 +291,7 @@ class DiveFileInfo:
         self.activity_frame = None                 # frame activity (footer)
         self.last_record_fields: dict = {}         # campi ultimo record per gap filling
         self.session_meta: dict = {}               # metadati sessione per aggregazione
+        self.session_dive_summary_frame = None     # dive_summary con reference_mesg=session
 
     @property
     def local_start_time(self) -> datetime | None:
@@ -217,15 +371,25 @@ def parse_fit_file(path: Path) -> DiveFileInfo:
                     info.end_time = rec_ts
                     info.last_record_fields = rec_fields
 
-            # Estrai metadati dal primo dive_summary con dive_number
-            if name == "dive_summary" and info.dive_number is None:
+            # Estrai metadati dai dive_summary
+            if name == "dive_summary":
+                ref_mesg = None
                 for f in frame.fields:
-                    if f.name == "dive_number" and f.value is not None:
-                        info.dive_number = int(f.value)
-                    elif f.name == "max_depth" and f.value is not None:
-                        info.max_depth = float(f.value)
-                    elif f.name == "bottom_time" and f.value is not None:
-                        info.bottom_time = float(f.value)
+                    if f.name == "reference_mesg":
+                        ref_mesg = f.value
+                        break
+                # Cattura il frame sessione per N2/CNS aggregato
+                if ref_mesg == "session" and info.session_dive_summary_frame is None:
+                    info.session_dive_summary_frame = frame
+                # Metadati numerici dal primo dive_summary con dive_number
+                if info.dive_number is None:
+                    for f in frame.fields:
+                        if f.name == "dive_number" and f.value is not None:
+                            info.dive_number = int(f.value)
+                        elif f.name == "max_depth" and f.value is not None:
+                            info.max_depth = float(f.value)
+                        elif f.name == "bottom_time" and f.value is not None:
+                            info.bottom_time = float(f.value)
 
     if info.start_time is None:
         raise ValueError("Nessun messaggio 'session' trovato nel file.")
@@ -303,7 +467,7 @@ def _build_merged_session(ordered_infos: list) -> SessionMessage:
     msg.first_lap_index = 0
     msg.num_laps = n
     msg.total_elapsed_time = total_elapsed
-    msg.total_timer_time = sum(float(m.get("total_timer_time") or 0) for m in metas)
+    msg.total_timer_time = total_elapsed  # include gli intervalli di superficie (dummy)
     msg.total_calories = int(sum(float(m.get("total_calories") or 0) for m in metas))
     if start_time:
         msg.start_time = _to_fit_ms(start_time)
@@ -334,6 +498,63 @@ def _build_merged_session(ordered_infos: list) -> SessionMessage:
     total_descent = sum(float(m.get("total_descent") or 0) for m in metas)
     msg.total_ascent = total_ascent
     msg.total_descent = total_descent
+
+    return msg
+
+
+def _gas_key(frame: fitdecode.FitDataMessage) -> tuple:
+    """Chiave di deduplicazione per un dive_gas (composizione del gas)."""
+    o2 = he = None
+    for f in frame.fields:
+        if f.name == "oxygen_content" and f.value is not None:
+            o2 = round(float(f.value), 3)
+        elif f.name == "helium_content" and f.value is not None:
+            he = round(float(f.value), 3)
+    return (o2, he)
+
+
+def _build_merged_session_dive_summary(ordered_infos: list) -> DiveSummaryMessage:
+    """
+    Costruisce un unico DiveSummaryMessage di tipo 'session' che aggrega
+    tutte le immersioni:
+      - bottom_time = somma dei tempi attivi
+      - max_depth = profondità massima effettiva su tutte le immersioni
+      - start_n2/start_cns = dal dive_summary sessione del PRIMO file
+      - end_n2/end_cns     = dal dive_summary sessione dell'ULTIMO file
+    """
+    first_ds = ordered_infos[0].session_dive_summary_frame
+    last_ds  = ordered_infos[-1].session_dive_summary_frame
+
+    msg = DiveSummaryMessage()
+    # Base sul primo frame di sessione (preserva reference_mesg raw, dive_number ecc.)
+    if first_ds is not None:
+        _apply_fields(msg, first_ds)
+
+    msg.reference_index = 0
+
+    # Tempo totale attivo subacqueo
+    total_bottom = sum(float(info.bottom_time or 0) for info in ordered_infos)
+    msg.bottom_time = total_bottom
+
+    # Profondità massima effettiva
+    max_d = max(
+        (info.max_depth for info in ordered_infos if info.max_depth is not None),
+        default=None,
+    )
+    if max_d is not None:
+        msg.max_depth = max_d
+
+    # N2 e CNS all'uscita: usa l'ultimo file
+    if last_ds is not None:
+        for f in last_ds.fields:
+            if f.name in {"end_n2", "end_cns"} and f.value is not None:
+                try:
+                    setattr(msg, f.name, f.value)
+                except Exception:
+                    try:
+                        setattr(msg, f.name, getattr(f, "raw_value", f.value))
+                    except Exception:
+                        pass
 
     return msg
 
@@ -377,15 +598,38 @@ def merge_fit_files(
             overrides["time_created"] = time_created
         builder.add(_build_msg(frame, ft_class, overrides))
 
-    # ── 2. Frame di ogni immersione + gap fill ─────────────────────────────
+    # ── 2. Raccogli e deduplicazione dive_gas ─────────────────────────────
+    seen_gas_keys: set = set()
+    unique_gas_frames: list = []
+    for info in ordered_infos:
+        for frame in info.session_frames:
+            if frame.name == "dive_gas":
+                key = _gas_key(frame)
+                if key not in seen_gas_keys:
+                    seen_gas_keys.add(key)
+                    unique_gas_frames.append(frame)
+    for gas_idx, frame in enumerate(unique_gas_frames):
+        builder.add(_build_msg(frame, DiveGasMessage, {"message_index": gas_idx}))
+    log(f"  Tipi di gas unici emessi: {len(unique_gas_frames)}")
+
+    # ── 3. Frame di ogni immersione + gap fill ─────────────────────────────
     for idx, info in enumerate(ordered_infos):
         dive_label = f"dive #{info.dive_number}" if info.dive_number else f"file {idx+1}"
         log(f"  Aggiunta immersione {idx + 1}/{n}: {dive_label}")
 
         for frame in info.session_frames:
             name = frame.name
-            if name == "session":
-                continue  # la sessione unica è costruita in seguito
+            if name in {"session", "dive_gas"}:
+                continue  # session → costruita dopo; dive_gas → già emessi deduplicati
+
+            if name == "dive_summary":
+                ref_mesg = None
+                for f in frame.fields:
+                    if f.name == "reference_mesg":
+                        ref_mesg = f.value
+                        break
+                if ref_mesg == "session":
+                    continue  # dive_summary sessione → sarà emessa aggregata dopo
 
             ft_class = KNOWN_MSG_CLASSES.get(name)
             if ft_class is None:
@@ -396,15 +640,7 @@ def merge_fit_files(
             if name == "lap":
                 overrides["message_index"] = idx
             elif name == "dive_summary":
-                ref_mesg = None
-                for f in frame.fields:
-                    if f.name == "reference_mesg":
-                        ref_mesg = f.value  # 'session' oppure 'lap'
-                        break
-                if ref_mesg == "session":
-                    overrides["reference_index"] = 0  # unica sessione unificata
-                else:
-                    overrides["reference_index"] = idx
+                overrides["reference_index"] = idx
 
             builder.add(_build_msg(frame, ft_class, overrides))
 
@@ -418,12 +654,17 @@ def merge_fit_files(
                 count = _fill_gap_records(builder, gap_start, gap_end, info.last_record_fields)
                 log(f"  Gap {idx+1}→{idx+2}: {count} record superficie ({secs}s)")
 
-    # ── 3. Sessione unica aggregata ────────────────────────────────────────
+    # ── 4. Sessione unica aggregata ────────────────────────────────────────
     log("  Costruzione sessione unica aggregata…")
     merged_session = _build_merged_session(ordered_infos)
     builder.add(merged_session)
 
-    # ── 4. Activity footer ─────────────────────────────────────────────────
+    # ── 4b. Dive summary aggregata a livello sessione ─────────────────────
+    log("  Costruzione dive summary di sessione aggregata…")
+    merged_ds = _build_merged_session_dive_summary(ordered_infos)
+    builder.add(merged_ds)
+
+    # ── 5. Activity footer ─────────────────────────────────────────────────
     last = ordered_infos[-1]
     activity_frame = first.activity_frame
     if activity_frame is not None:
@@ -456,6 +697,7 @@ class MergerApp:
         self.root.minsize(740, 440)
 
         self._infos: list[DiveFileInfo] = []
+        self._lang = tk.StringVar(value="it")
         self._build_ui()
 
     # ── Costruzione UI ────────────────────────────────────────────────────
@@ -466,27 +708,40 @@ class MergerApp:
         toolbar = ttk.Frame(root, padding=(6, 6, 6, 2))
         toolbar.pack(fill=tk.X)
 
-        ttk.Button(toolbar, text="➕  Aggiungi file…", command=self._add_files).pack(side=tk.LEFT, padx=2)
-        ttk.Button(toolbar, text="✖  Rimuovi",         command=self._remove_selected).pack(side=tk.LEFT, padx=2)
+        self.btn_add = ttk.Button(toolbar, text="➕  Aggiungi file…", command=self._add_files)
+        self.btn_add.pack(side=tk.LEFT, padx=2)
+        self.btn_remove = ttk.Button(toolbar, text="✖  Rimuovi", command=self._remove_selected)
+        self.btn_remove.pack(side=tk.LEFT, padx=2)
         ttk.Separator(toolbar, orient=tk.VERTICAL).pack(side=tk.LEFT, fill=tk.Y, padx=6)
         ttk.Button(toolbar, text="↑", width=3, command=lambda: self._move(-1)).pack(side=tk.LEFT, padx=1)
         ttk.Button(toolbar, text="↓", width=3, command=lambda: self._move(+1)).pack(side=tk.LEFT, padx=1)
         ttk.Separator(toolbar, orient=tk.VERTICAL).pack(side=tk.LEFT, fill=tk.Y, padx=6)
-        ttk.Button(toolbar, text="⟳  Riordina per ora", command=self._sort_by_time).pack(side=tk.LEFT, padx=2)
+        self.btn_sort = ttk.Button(toolbar, text="⟳  Riordina per ora", command=self._sort_by_time)
+        self.btn_sort.pack(side=tk.LEFT, padx=2)
+
+        # Selettore lingua (lato destro della toolbar)
+        lang_cb = ttk.Combobox(
+            toolbar, textvariable=self._lang, width=4, state="readonly",
+            values=["it", "en", "de", "fr", "es"],
+        )
+        lang_cb.pack(side=tk.RIGHT, padx=(2, 4))
+        ttk.Label(toolbar, text="🌐").pack(side=tk.RIGHT)
+        self._lang.trace_add("write", self._apply_lang)
 
         # Treeview lista file
-        frame_list = ttk.LabelFrame(root, text="File selezionati", padding=6)
-        frame_list.pack(fill=tk.BOTH, expand=True, padx=8, pady=(4, 4))
+        self.lf_files = ttk.LabelFrame(root, text="File selezionati", padding=6)
+        self.lf_files.pack(fill=tk.BOTH, expand=True, padx=8, pady=(4, 4))
+        frame_list = self.lf_files
 
         cols = ("file", "dive_n", "data_ora", "max_depth", "bottom_time", "durata")
         self.tree = ttk.Treeview(frame_list, columns=cols, show="headings", selectmode="browse")
 
-        self.tree.heading("file",        text="Nome file")
-        self.tree.heading("dive_n",      text="Dive #")
-        self.tree.heading("data_ora",    text="Data/Ora (locale)")
-        self.tree.heading("max_depth",   text="Prof. max")
-        self.tree.heading("bottom_time", text="Fondo")
-        self.tree.heading("durata",      text="Durata")
+        self.tree.heading("file",        text=self._t("col_file"))
+        self.tree.heading("dive_n",      text=self._t("col_dive_n"))
+        self.tree.heading("data_ora",    text=self._t("col_datetime"))
+        self.tree.heading("max_depth",   text=self._t("col_max_depth"))
+        self.tree.heading("bottom_time", text=self._t("col_bottom_time"))
+        self.tree.heading("durata",      text=self._t("col_duration"))
 
         self.tree.column("file",        width=200, minwidth=120, anchor=tk.W)
         self.tree.column("dive_n",      width=60,  minwidth=50,  anchor=tk.CENTER)
@@ -501,14 +756,16 @@ class MergerApp:
         sb.pack(side=tk.RIGHT, fill=tk.Y)
 
         # Output path
-        frame_out = ttk.LabelFrame(root, text="File di output", padding=6)
-        frame_out.pack(fill=tk.X, padx=8, pady=(0, 4))
+        self.lf_output = ttk.LabelFrame(root, text="File di output", padding=6)
+        self.lf_output.pack(fill=tk.X, padx=8, pady=(0, 4))
+        frame_out = self.lf_output
 
         self.var_out = tk.StringVar()
         ttk.Entry(frame_out, textvariable=self.var_out).pack(
             side=tk.LEFT, fill=tk.X, expand=True, padx=(0, 4)
         )
-        ttk.Button(frame_out, text="Sfoglia…", command=self._browse_output).pack(side=tk.LEFT)
+        self.btn_browse = ttk.Button(frame_out, text="Sfoglia…", command=self._browse_output)
+        self.btn_browse.pack(side=tk.LEFT)
 
         # Bottom bar: status + merge button
         frame_bot = ttk.Frame(root, padding=(8, 2, 8, 8))
@@ -519,16 +776,38 @@ class MergerApp:
         )
         self.btn_merge.pack(side=tk.RIGHT, padx=(6, 0))
 
-        self.var_status = tk.StringVar(value="Aggiungi almeno 2 file .fit per iniziare.")
+        self.var_status = tk.StringVar(value=self._t("status_initial"))
         ttk.Label(frame_bot, textvariable=self.var_status, anchor=tk.W).pack(
             side=tk.LEFT, fill=tk.X, expand=True
         )
 
+    # ── Internazionalizzazione ────────────────────────────────────────────
+    def _t(self, key: str) -> str:
+        """Restituisce la stringa tradotta per la lingua corrente."""
+        return TRANSLATIONS.get(self._lang.get(), TRANSLATIONS["it"]).get(key, key)
+
+    def _apply_lang(self, *_):
+        """Aggiorna tutti i widget con le stringhe della lingua selezionata."""
+        self.btn_add.config(text=self._t("btn_add"))
+        self.btn_remove.config(text=self._t("btn_remove"))
+        self.btn_sort.config(text=self._t("btn_sort"))
+        self.btn_merge.config(text=self._t("btn_merge"))
+        self.btn_browse.config(text=self._t("btn_browse"))
+        self.lf_files.config(text=self._t("lf_files"))
+        self.lf_output.config(text=self._t("lf_output"))
+        self.tree.heading("file",        text=self._t("col_file"))
+        self.tree.heading("dive_n",      text=self._t("col_dive_n"))
+        self.tree.heading("data_ora",    text=self._t("col_datetime"))
+        self.tree.heading("max_depth",   text=self._t("col_max_depth"))
+        self.tree.heading("bottom_time", text=self._t("col_bottom_time"))
+        self.tree.heading("durata",      text=self._t("col_duration"))
+        self._update_state()
+
     # ── Azioni toolbar ────────────────────────────────────────────────────
     def _add_files(self):
         paths = filedialog.askopenfilenames(
-            title="Seleziona file .fit",
-            filetypes=[("Garmin FIT", "*.fit"), ("Tutti i file", "*.*")],
+            title=self._t("fd_open_title"),
+            filetypes=[("Garmin FIT", "*.fit"), (self._t("fd_open_ft_all"), "*.*")],
         )
         if not paths:
             return
@@ -540,7 +819,7 @@ class MergerApp:
             if any(info.path == path for info in self._infos):
                 continue  # già presente, salta
             try:
-                self._set_status(f"Lettura {path.name}…")
+                self._set_status(self._t("status_reading").format(name=path.name))
                 info = parse_fit_file(path)
                 self._infos.append(info)
                 self._append_tree_row(info)
@@ -550,7 +829,7 @@ class MergerApp:
 
         if errors:
             messagebox.showerror(
-                "Errore lettura file",
+                self._t("dlg_read_err_title"),
                 "\n".join(errors),
                 parent=self.root,
             )
@@ -598,7 +877,7 @@ class MergerApp:
     def _browse_output(self):
         initial = Path(self.var_out.get()) if self.var_out.get() else Path.home()
         path = filedialog.asksaveasfilename(
-            title="Salva file merged",
+            title=self._t("fd_save_title"),
             defaultextension=".fit",
             filetypes=[("Garmin FIT", "*.fit")],
             initialdir=str(initial.parent) if initial.suffix else str(initial),
@@ -612,8 +891,8 @@ class MergerApp:
         output = self.var_out.get().strip()
         if not output:
             messagebox.showwarning(
-                "Percorso mancante",
-                "Specifica il percorso del file di output.",
+                self._t("dlg_no_out_title"),
+                self._t("dlg_no_out_msg"),
                 parent=self.root,
             )
             return
@@ -626,22 +905,21 @@ class MergerApp:
 
         try:
             self.btn_merge["state"] = tk.DISABLED
-            log(f"Merge di {len(self._infos)} immersioni in corso…")
+            log(self._t("status_merging").format(n=len(self._infos)))
             merge_fit_files(self._infos, output_path, log_fn=log)
             messagebox.showinfo(
-                "Merge completato",
-                f"File salvato con successo:\n{output_path}\n\n"
-                f"{len(self._infos)} immersioni unite.",
+                self._t("dlg_done_title"),
+                self._t("dlg_done_msg").format(path=output_path, n=len(self._infos)),
                 parent=self.root,
             )
-            self._set_status(f"✓ Merge completato → {output_path.name}")
+            self._set_status(self._t("status_done").format(name=output_path.name))
         except Exception as exc:
             messagebox.showerror(
-                "Errore durante il merge",
+                self._t("dlg_err_title"),
                 f"{exc}\n\nDettagli:\n{traceback.format_exc()}",
                 parent=self.root,
             )
-            self._set_status(f"✗ Errore: {exc}")
+            self._set_status(self._t("status_error").format(exc=exc))
         finally:
             self._update_state()
 
@@ -688,11 +966,9 @@ class MergerApp:
         can_merge = len(self._infos) >= 2
         self.btn_merge["state"] = tk.NORMAL if can_merge else tk.DISABLED
         if can_merge:
-            self._set_status(
-                f"{len(self._infos)} file pronti — premi Unisci per procedere."
-            )
+            self._set_status(self._t("status_ready").format(n=len(self._infos)))
         else:
-            self._set_status("Aggiungi almeno 2 file .fit per iniziare.")
+            self._set_status(self._t("status_initial"))
 
     def _set_status(self, msg: str):
         self.var_status.set(msg)
