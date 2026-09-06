@@ -25,6 +25,7 @@
   - `start_n2` / `start_cns` → valori della prima immersione
   - `end_n2` / `end_cns` → valori dell'ultima immersione
   - `total_calories` → somma di tutte le immersioni
+- Permette di **correggere il tipo di immersione** (Gas Singolo / Multi Gas / CCR) nel file unito, utile se il computer subacqueo era stato impostato sulla modalità sbagliata
 - Interfaccia **multilingua**: 🇮🇹 Italiano · 🇬🇧 English · 🇩🇪 Deutsch · 🇫🇷 Français · 🇪🇸 Español
 
 ---
@@ -67,8 +68,9 @@ python3 merge_fit.py
 2. I file vengono ordinati automaticamente per data/ora di inizio
 3. Usa ↑ / ↓ per riordinare manualmente se necessario
 4. Verifica il percorso del **file di output** (generato automaticamente)
-5. Clicca **⚡ Unisci**
-6. Carica il file `.fit` risultante su **Garmin Connect** → _Importa dati_
+5. Se il computer era impostato sulla modalità sbagliata, correggi il **Tipo di immersione** (Gas Singolo / Multi Gas / CCR)
+6. Clicca **⚡ Unisci**
+7. Carica il file `.fit` risultante su **Garmin Connect** → _Importa dati_
 
 ---
 

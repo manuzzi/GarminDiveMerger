@@ -12,7 +12,10 @@ from datetime import datetime, timezone, timedelta
 import traceback
 
 import fitdecode
+from fit_tool.base_type import BaseType
+from fit_tool.field import Field
 from fit_tool.fit_file_builder import FitFileBuilder
+from fit_tool.profile.profile_type import SubSport
 from fit_tool.profile.messages.file_id_message import FileIdMessage
 from fit_tool.profile.messages.activity_message import ActivityMessage
 from fit_tool.profile.messages.session_message import SessionMessage
@@ -57,6 +60,34 @@ KNOWN_MSG_CLASSES: dict = {
 # Campi che portano un timestamp e vanno convertiti in ms dall'epoch FIT
 TIMESTAMP_FIELD_NAMES = {"timestamp", "time_created", "local_timestamp", "start_time"}
 
+# ── Tipi di immersione correggibili ──────────────────────────────────────────
+# Il computer subacqueo può essere stato impostato erroneamente sul tipo di
+# immersione sbagliato: questa mappa consente di forzare il valore corretto
+# nel file unito. Il FIT SDK non prevede un sub_sport dedicato per la modalità
+# CCR: viene registrata come multi_gas_diving e distinta tramite il campo
+# dive_gas.mode = closed_circuit_diluent.
+DIVE_GAS_MODE_FIELD_ID = 3  # id del campo 'mode' nel messaggio dive_gas (profilo FIT)
+DIVE_GAS_MODE_OPEN_CIRCUIT = 0
+DIVE_GAS_MODE_CLOSED_CIRCUIT_DILUENT = 1
+
+DIVE_TYPES: dict[str, dict] = {
+    "single_gas": {"sub_sport": SubSport.SINGLE_GAS_DIVING, "gas_mode": DIVE_GAS_MODE_OPEN_CIRCUIT},
+    "multi_gas":  {"sub_sport": SubSport.MULTI_GAS_DIVING,  "gas_mode": DIVE_GAS_MODE_OPEN_CIRCUIT},
+    "ccr":        {"sub_sport": SubSport.MULTI_GAS_DIVING,  "gas_mode": DIVE_GAS_MODE_CLOSED_CIRCUIT_DILUENT},
+}
+DEFAULT_DIVE_TYPE = "multi_gas"
+
+# Per pre-selezionare in UI il tipo già impostato sul computer (sub_sport originale)
+_SUB_SPORT_TO_DIVE_TYPE = {
+    SubSport.SINGLE_GAS_DIVING.value: "single_gas",
+    SubSport.MULTI_GAS_DIVING.value:  "multi_gas",
+}
+
+
+def detect_dive_type(sub_sport_raw) -> str:
+    """Deduce il tipo di immersione dal sub_sport originale (per pre-selezione UI)."""
+    return _SUB_SPORT_TO_DIVE_TYPE.get(sub_sport_raw, DEFAULT_DIVE_TYPE)
+
 _DT_MIN_UTC = datetime(1970, 1, 1, tzinfo=timezone.utc)
 _FIT_EPOCH_S = 631_065_600  # Unix seconds per il FIT epoch (1989-12-31 UTC)
 
@@ -70,6 +101,10 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "btn_browse":         "Sfoglia…",
         "lf_files":           "File selezionati",
         "lf_output":          "File di output",
+        "lbl_dive_type":      "Tipo di immersione:",
+        "dive_type_single_gas": "Gas Singolo",
+        "dive_type_multi_gas":  "Multi Gas",
+        "dive_type_ccr":        "CCR",
         "col_file":           "Nome file",
         "col_dive_n":         "Dive #",
         "col_datetime":       "Data/Ora (locale)",
@@ -100,6 +135,10 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "btn_browse":         "Browse…",
         "lf_files":           "Selected files",
         "lf_output":          "Output file",
+        "lbl_dive_type":      "Dive type:",
+        "dive_type_single_gas": "Single Gas",
+        "dive_type_multi_gas":  "Multi Gas",
+        "dive_type_ccr":        "CCR",
         "col_file":           "File name",
         "col_dive_n":         "Dive #",
         "col_datetime":       "Date/Time (local)",
@@ -130,6 +169,10 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "btn_browse":         "Durchsuchen…",
         "lf_files":           "Ausgewählte Dateien",
         "lf_output":          "Ausgabedatei",
+        "lbl_dive_type":      "Tauchgangstyp:",
+        "dive_type_single_gas": "Einzelgas",
+        "dive_type_multi_gas":  "Multigas",
+        "dive_type_ccr":        "CCR",
         "col_file":           "Dateiname",
         "col_dive_n":         "Tauchgang #",
         "col_datetime":       "Datum/Uhrzeit (lokal)",
@@ -160,6 +203,10 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "btn_browse":         "Parcourir…",
         "lf_files":           "Fichiers sélectionnés",
         "lf_output":          "Fichier de sortie",
+        "lbl_dive_type":      "Type de plongée :",
+        "dive_type_single_gas": "Gaz unique",
+        "dive_type_multi_gas":  "Multi-gaz",
+        "dive_type_ccr":        "CCR",
         "col_file":           "Nom du fichier",
         "col_dive_n":         "Plongée #",
         "col_datetime":       "Date/Heure (locale)",
@@ -190,6 +237,10 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "btn_browse":         "Explorar…",
         "lf_files":           "Archivos seleccionados",
         "lf_output":          "Archivo de salida",
+        "lbl_dive_type":      "Tipo de inmersión:",
+        "dive_type_single_gas": "Gas único",
+        "dive_type_multi_gas":  "Multigás",
+        "dive_type_ccr":        "CCR",
         "col_file":           "Nombre de archivo",
         "col_dive_n":         "Buceo #",
         "col_datetime":       "Fecha/Hora (local)",
@@ -283,6 +334,7 @@ class DiveFileInfo:
         self.end_time: datetime | None = None     # UTC timestamp ultimo record
         self.local_offset_h: int = 0               # offset ora locale rispetto UTC
         self.dive_number: int | None = None
+        self.sub_sport: int | None = None          # sub_sport raw originale (per pre-selezione tipo immersione)
         self.max_depth: float | None = None        # metri
         self.bottom_time: float | None = None      # secondi
         self.total_elapsed: float | None = None    # secondi
@@ -349,6 +401,8 @@ def parse_fit_file(path: Path) -> DiveFileInfo:
                         info.start_time = f.value
                     elif f.name == "total_elapsed_time" and f.value is not None:
                         info.total_elapsed = float(f.value)
+                    elif f.name == "sub_sport" and f.value is not None:
+                        info.sub_sport = getattr(f, "raw_value", None)
                     if f.name in {
                         "total_timer_time", "total_calories",
                         "avg_heart_rate", "max_heart_rate", "min_heart_rate",
@@ -398,6 +452,10 @@ def parse_fit_file(path: Path) -> DiveFileInfo:
 
 
 # ── Helpers merge ────────────────────────────────────────────────────────────
+MAX_GAP_FILL_RECORDS = 3600  # tetto per gap, a prescindere dalla durata (es. immersioni di giorni diversi)
+MAX_REASONABLE_GAP_SECONDS = 4 * 3600  # oltre questa soglia il gap viene segnalato in log
+
+
 def _fill_gap_records(
     builder: FitFileBuilder,
     gap_start: datetime,
@@ -407,12 +465,21 @@ def _fill_gap_records(
     """
     Inserisce record dummy di superficie nell'intervallo (gap_start, gap_end).
     Usa l'ultimo heart_rate/temperatura noti; depth=0 (superfice).
+    Il passo tra un record e l'altro è di 1s, ma viene allargato se servirebbero
+    più di MAX_GAP_FILL_RECORDS record (es. un gap di ore/giorni tra due file
+    che non appartengono alla stessa sessione): senza questo limite generare
+    un record al secondo per un gap del genere richiederebbe minuti e
+    produrrebbe un file enorme.
     Restituisce il numero di record inseriti.
     """
     hr = last_fields.get("heart_rate")
     temp = last_fields.get("temperature")
     abs_pres = 101325  # Pa standard a superficie (1 atm)
-    t = gap_start + timedelta(seconds=1)
+
+    total_seconds = int((gap_end - gap_start).total_seconds())
+    step_seconds = max(1, -(-total_seconds // MAX_GAP_FILL_RECORDS))  # ceil division
+
+    t = gap_start + timedelta(seconds=step_seconds)
     count = 0
     while t < gap_end:
         rec = RecordMessage()
@@ -430,16 +497,18 @@ def _fill_gap_records(
             except Exception:
                 pass
         builder.add(rec)
-        t += timedelta(seconds=1)
+        t += timedelta(seconds=step_seconds)
         count += 1
     return count
 
 
-def _build_merged_session(ordered_infos: list) -> SessionMessage:
+def _build_merged_session(ordered_infos: list, dive_type: str = DEFAULT_DIVE_TYPE) -> SessionMessage:
     """
     Costruisce un singolo SessionMessage aggregato da tutte le immersioni.
     Usa il frame sessione del primo file come base (sport, sub_sport, ecc.)
     e sovrascrive con valori aggregati.
+    dive_type sovrascrive il sub_sport per correggere un'eventuale impostazione
+    errata sul computer subacqueo (vedi DIVE_TYPES).
     """
     first = ordered_infos[0]
     last = ordered_infos[-1]
@@ -473,6 +542,7 @@ def _build_merged_session(ordered_infos: list) -> SessionMessage:
         msg.start_time = _to_fit_ms(start_time)
     if end_time:
         msg.timestamp = _to_fit_ms(end_time)
+    msg.sub_sport = DIVE_TYPES[dive_type]["sub_sport"]
 
     avg_hrs = [m["avg_heart_rate"] for m in metas if m.get("avg_heart_rate") is not None]
     if avg_hrs:
@@ -511,6 +581,20 @@ def _gas_key(frame: fitdecode.FitDataMessage) -> tuple:
         elif f.name == "helium_content" and f.value is not None:
             he = round(float(f.value), 3)
     return (o2, he)
+
+
+def _set_dive_gas_mode(msg: DiveGasMessage, mode: int) -> None:
+    """
+    Imposta il campo 'mode' (open_circuit/closed_circuit_diluent) su un dive_gas.
+    fit-tool 0.9.15 non definisce ancora questo campo del profilo FIT: viene
+    registrato dinamicamente sul messaggio così da essere comunque codificato
+    nel file di output.
+    """
+    field = msg.get_field(DIVE_GAS_MODE_FIELD_ID)
+    if field is None:
+        field = Field(field_id=DIVE_GAS_MODE_FIELD_ID, name="mode", base_type=BaseType.ENUM, growable=True)
+        msg.fields.append(field)
+    field.set_value(0, mode)
 
 
 def _build_merged_session_dive_summary(ordered_infos: list) -> DiveSummaryMessage:
@@ -564,6 +648,7 @@ def merge_fit_files(
     ordered_infos: list,
     output_path: Path,
     log_fn=None,
+    dive_type: str = DEFAULT_DIVE_TYPE,
 ):
     """
     Unisce i file .fit in un'unica immersione (1 session, N lap) con record
@@ -572,11 +657,17 @@ def merge_fit_files(
     ordered_infos : lista di DiveFileInfo nell'ordine voluto dall'utente.
     output_path   : percorso del file .fit di output.
     log_fn        : callable(str) per messaggi di avanzamento (opzionale).
+    dive_type     : "single_gas" | "multi_gas" | "ccr" — forza il tipo di
+                    immersione nel file unito, per correggere un'eventuale
+                    impostazione errata sul computer subacqueo.
     """
 
     def log(msg: str):
         if log_fn:
             log_fn(msg)
+
+    if dive_type not in DIVE_TYPES:
+        dive_type = DEFAULT_DIVE_TYPE
 
     n = len(ordered_infos)
     builder = FitFileBuilder(auto_define=True)
@@ -609,8 +700,11 @@ def merge_fit_files(
                     seen_gas_keys.add(key)
                     unique_gas_frames.append(frame)
     for gas_idx, frame in enumerate(unique_gas_frames):
-        builder.add(_build_msg(frame, DiveGasMessage, {"message_index": gas_idx}))
+        gas_msg = _build_msg(frame, DiveGasMessage, {"message_index": gas_idx})
+        _set_dive_gas_mode(gas_msg, DIVE_TYPES[dive_type]["gas_mode"])
+        builder.add(gas_msg)
     log(f"  Tipi di gas unici emessi: {len(unique_gas_frames)}")
+    log(f"  Tipo di immersione impostato: {dive_type}")
 
     # ── 3. Frame di ogni immersione + gap fill ─────────────────────────────
     for idx, info in enumerate(ordered_infos):
@@ -651,12 +745,17 @@ def merge_fit_files(
             gap_end = next_info.start_time
             if gap_start and gap_end and gap_end > gap_start:
                 secs = int((gap_end - gap_start).total_seconds())
+                if secs > MAX_REASONABLE_GAP_SECONDS:
+                    log(
+                        f"  ⚠ Gap {idx+1}→{idx+2} di {secs/3600:.1f}h: file forse di "
+                        f"immersioni/giornate diverse, controlla la selezione."
+                    )
                 count = _fill_gap_records(builder, gap_start, gap_end, info.last_record_fields)
                 log(f"  Gap {idx+1}→{idx+2}: {count} record superficie ({secs}s)")
 
     # ── 4. Sessione unica aggregata ────────────────────────────────────────
     log("  Costruzione sessione unica aggregata…")
-    merged_session = _build_merged_session(ordered_infos)
+    merged_session = _build_merged_session(ordered_infos, dive_type)
     builder.add(merged_session)
 
     # ── 4b. Dive summary aggregata a livello sessione ─────────────────────
@@ -698,6 +797,8 @@ class MergerApp:
 
         self._infos: list[DiveFileInfo] = []
         self._lang = tk.StringVar(value="it")
+        self._dive_type_keys = ["single_gas", "multi_gas", "ccr"]
+        self._dive_type = tk.StringVar(value=DEFAULT_DIVE_TYPE)
         self._build_ui()
 
     # ── Costruzione UI ────────────────────────────────────────────────────
@@ -760,12 +861,23 @@ class MergerApp:
         self.lf_output.pack(fill=tk.X, padx=8, pady=(0, 4))
         frame_out = self.lf_output
 
+        row_path = ttk.Frame(frame_out)
+        row_path.pack(fill=tk.X)
         self.var_out = tk.StringVar()
-        ttk.Entry(frame_out, textvariable=self.var_out).pack(
+        ttk.Entry(row_path, textvariable=self.var_out).pack(
             side=tk.LEFT, fill=tk.X, expand=True, padx=(0, 4)
         )
-        self.btn_browse = ttk.Button(frame_out, text="Sfoglia…", command=self._browse_output)
+        self.btn_browse = ttk.Button(row_path, text="Sfoglia…", command=self._browse_output)
         self.btn_browse.pack(side=tk.LEFT)
+
+        row_dive_type = ttk.Frame(frame_out)
+        row_dive_type.pack(fill=tk.X, pady=(6, 0))
+        self.lbl_dive_type = ttk.Label(row_dive_type, text=self._t("lbl_dive_type"))
+        self.lbl_dive_type.pack(side=tk.LEFT, padx=(0, 6))
+        self.cb_dive_type = ttk.Combobox(row_dive_type, state="readonly", width=20)
+        self.cb_dive_type.pack(side=tk.LEFT)
+        self.cb_dive_type.bind("<<ComboboxSelected>>", self._on_dive_type_selected)
+        self._refresh_dive_type_combo()
 
         # Bottom bar: status + merge button
         frame_bot = ttk.Frame(root, padding=(8, 2, 8, 8))
@@ -795,6 +907,8 @@ class MergerApp:
         self.btn_browse.config(text=self._t("btn_browse"))
         self.lf_files.config(text=self._t("lf_files"))
         self.lf_output.config(text=self._t("lf_output"))
+        self.lbl_dive_type.config(text=self._t("lbl_dive_type"))
+        self._refresh_dive_type_combo()
         self.tree.heading("file",        text=self._t("col_file"))
         self.tree.heading("dive_n",      text=self._t("col_dive_n"))
         self.tree.heading("data_ora",    text=self._t("col_datetime"))
@@ -812,6 +926,7 @@ class MergerApp:
         if not paths:
             return
 
+        was_empty = not self._infos
         errors = []
         added = 0
         for p in paths:
@@ -837,6 +952,11 @@ class MergerApp:
         if added:
             self._sort_by_time()
             self._refresh_output_name()
+            if was_empty:
+                # Pre-seleziona il tipo di immersione già impostato sul computer,
+                # così il campo riflette lo stato reale finché l'utente non lo corregge.
+                self._dive_type.set(detect_dive_type(self._infos[0].sub_sport))
+                self._refresh_dive_type_combo()
 
         self._update_state()
 
@@ -874,6 +994,19 @@ class MergerApp:
         self._rebuild_tree()
         self._update_state()
 
+    def _refresh_dive_type_combo(self):
+        """Aggiorna le etichette del combobox tipo immersione nella lingua corrente."""
+        self.cb_dive_type["values"] = [
+            self._t(f"dive_type_{key}") for key in self._dive_type_keys
+        ]
+        idx = self._dive_type_keys.index(self._dive_type.get())
+        self.cb_dive_type.current(idx)
+
+    def _on_dive_type_selected(self, _event=None):
+        idx = self.cb_dive_type.current()
+        if idx >= 0:
+            self._dive_type.set(self._dive_type_keys[idx])
+
     def _browse_output(self):
         initial = Path(self.var_out.get()) if self.var_out.get() else Path.home()
         path = filedialog.asksaveasfilename(
@@ -906,7 +1039,9 @@ class MergerApp:
         try:
             self.btn_merge["state"] = tk.DISABLED
             log(self._t("status_merging").format(n=len(self._infos)))
-            merge_fit_files(self._infos, output_path, log_fn=log)
+            merge_fit_files(
+                self._infos, output_path, log_fn=log, dive_type=self._dive_type.get()
+            )
             messagebox.showinfo(
                 self._t("dlg_done_title"),
                 self._t("dlg_done_msg").format(path=output_path, n=len(self._infos)),
